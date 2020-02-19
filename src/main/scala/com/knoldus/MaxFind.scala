@@ -5,16 +5,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-case class UserPostComment(user: User, postWithComments: List[PostWithComments])
 
 
-object MaxFind {
+
+class MaxFind {
 
 
   def maxFinder(key: String): Future[String] = {
     val userUrl = "https://jsonplaceholder.typicode.com/users"
     val postUrl = "https://jsonplaceholder.typicode.com/posts"
-    val commentUrl = "https://jsonplaceholder.typicode.com/posts"
+    val commentUrl = "https://jsonplaceholder.typicode.com/comments"
 
     if (key == "Post") userWithMostPost(userUrl, postUrl) else userWithMostComment(postUrl, commentUrl)
 
@@ -29,13 +29,17 @@ object MaxFind {
     def maxPost(futureListUserPost: Future[List[UserWithPost]], max: Future[String]): Future[String] = {
 
       futureListUserPost.map {
-        _ match {
-          case _ :: Nil => max
-          case first :: second :: rest => if (first.post.length > second.post.length) maxPost(Future {
+        case Nil => max
+        case _ :: Nil => max
+        case first :: second :: rest => if (first.post.length > second.post.length) {
+          maxPost(Future {
             first :: rest
           }, Future {
             first.user.name
-          }) else maxPost(Future {
+          })
+        }
+        else {
+          maxPost(Future {
             second :: rest
           }, Future {
             second.user.name
@@ -59,13 +63,16 @@ object MaxFind {
     def maxComment(futureListPostComment: Future[List[PostWithComments]], max: Future[Int]): Future[Int] = {
 
       futureListPostComment.map {
-        _ match {
-          case _ :: Nil => max
-          case first :: second :: rest => if (first.comment.length > second.comment.length) maxComment(Future {
+        case Nil => max
+        case _ :: Nil => max
+        case first :: second :: rest => if (first.comment.length > second.comment.length) {
+          maxComment(Future {
             first :: rest
           }, Future {
             first.post.userId
-          }) else maxComment(Future {
+          })
+        } else {
+          maxComment(Future {
             second :: rest
           }, Future {
             second.post.userId
@@ -78,12 +85,12 @@ object MaxFind {
     val futureMaxPostComment = maxComment(temp, Future {
       0
     })
-    futureUsers.map(users => futureMaxPostComment.map(maxPostComment => users.filter(user => user.id == maxPostComment)(0).name)).flatten
 
-
-    //    futureUsers.map(users=>futureMaxPostComment.map(maxPostComment=>users.filter(_.id==maxPostComment)(0)).)
-    //      print(nameOfMaxComment)
+    futureUsers.map(users => futureMaxPostComment.map(maxPostComment => users.filter(user => user.id == maxPostComment).head.name)).flatten
 
 
   }
+
+
 }
+

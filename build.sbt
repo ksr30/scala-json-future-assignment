@@ -12,6 +12,6 @@ libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "4.5.11"
 
 libraryDependencies += "net.liftweb" %% "lift-json" % "3.4.0"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.0" % "test"
+
 
 
